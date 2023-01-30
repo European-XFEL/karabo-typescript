@@ -22,7 +22,7 @@ function readInt16(parser: BinaryDecoder): Types.Int16 {
 
 function readUInt32(parser: BinaryDecoder): Types.UInt32 {
   parser.pos += 4;
-  const value = parser.dataview.getInt32(parser.pos - 4, true);
+  const value = parser.dataview.getUint32(parser.pos - 4, true);
   return new Types.UInt32(value);
 }
 
