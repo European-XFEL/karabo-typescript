@@ -87,6 +87,30 @@ function encodeString(parser: BinaryEncoder, data: string): ArrayBuffer {
   return ret;
 }
 
+function encodeVectorString(parser: BinaryEncoder, data: string[]): ArrayBuffer {
+  // Writes each string in the vector to its own ArrayBuffer
+  const strBuffers: Uint8Array[] = [];
+  let stringsLength = 0;
+  for (let i = 0; i < data.length; i++) {
+    const strBuffer = encodeString(parser, data[i]);
+    stringsLength += strBuffer.byteLength;
+    strBuffers.push(new Uint8Array(strBuffer.slice(0)));
+  }
+  // Allocates a buffer for the vector of strings and an initial UInt32 for
+  // the length of the vector of strings.
+  const ret = new Uint8Array(4 + stringsLength);
+  const dv = new DataView(ret.buffer);
+  // Writes the length of the vector of strings.
+  dv.setUint32(0, data.length, true);
+  let offset = 4;
+  // Writes the previously serialized strings to the buffer
+  for (const strBuffer of strBuffers) {
+    ret.set(strBuffer, offset);
+    offset += strBuffer.length;
+  }
+  return ret;
+}
+
 class BinaryEncoder {
   encoder = new TextEncoder();
 
@@ -118,6 +142,8 @@ class BinaryEncoder {
         return encodeFloat64(this, value.value_);
       case Types.HashTypes.String:
         return encodeString(this, value.value_);
+      case Types.HashTypes.VectorString:
+        return encodeVectorString(this, value.value_);
       case Types.HashTypes.Hash:
         return this.encodeHash(value.value_);
       default:
