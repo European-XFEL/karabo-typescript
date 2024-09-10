@@ -142,6 +142,8 @@ class BinaryEncoder {
         return encodeFloat64(this, value.value_);
       case Types.HashTypes.String:
         return encodeString(this, value.value_);
+      case Types.HashTypes.VectorString:
+        return encodeVectorString(this, value.value_);
       case Types.HashTypes.Hash:
         return this.encodeHash(value.value_);
       default:
