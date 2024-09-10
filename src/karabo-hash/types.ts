@@ -118,8 +118,8 @@ export class UInt8 extends Integer {
 
   readonly max = 2 ** 8 - 1;
 
-  constructor(public _value: number) {
-    super(_value);
+  constructor(public value_: number) {
+    super(value_);
   }
 }
 

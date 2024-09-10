@@ -1,4 +1,5 @@
 import * as Types from './types';
+import { TextDecoder } from 'util';
 
 function readUInt8(parser: BinaryDecoder): Types.UInt8 {
   parser.pos += 1;
@@ -244,6 +245,10 @@ class BinaryDecoder {
       size -= 1;
     }
     return new Types.Hash(ret);
+  }
+
+  readSchema(): Types.Schema {
+    return readSchema(this);
   }
 }
 
