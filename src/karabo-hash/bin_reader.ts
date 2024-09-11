@@ -152,7 +152,7 @@ function parserUndefined(parser: BinaryDecoder, type: number): Types.Hash {
 
 const parsers = [
   readBool, // Bool = 0
-  readVectorBool, // makeVectorReader(readBool, Types.VectorBool), // readVectorBool, // VectorBool = 1
+  readVectorBool, // VectorBool = 1
   readChar, // Char = 2
   readVectorChar, // VectorChar = 3
   readInt8, // Int8 = 4
