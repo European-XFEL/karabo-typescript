@@ -1,4 +1,5 @@
 import * as Types from './types';
+import { TextDecoder } from 'util';
 
 function readUInt8(parser: BinaryDecoder): Types.UInt8 {
   parser.pos += 1;
@@ -58,30 +59,24 @@ function readBool(parser: BinaryDecoder): Types.Bool {
   return new Types.Bool(parser.data[parser.pos - 1] === 1);
 }
 
-// function readVectorBool(parser: BinaryDecoder): boolean[] {
-//   const size = readUInt32(parser).value;
-//   const start = parser.pos;
-//   parser.pos = start + size;
-//   const arr = new Array<boolean>(size);
-//   parser.data.slice(start, parser.pos).forEach((element, index) => {
-//     if (element > 0) {
-//       arr[index] = true;
-//     } else {
-//       arr[index] = false;
-//     }
-//   });
-//   return arr;
-// }
-
-function readChar(parser: BinaryDecoder): Types.String {
-  parser.pos += 1;
-  return new Types.String(String.fromCharCode(parser.data[parser.pos - 1]));
+function readVectorBool(parser: BinaryDecoder): Types.VectorBool {
+  const size = readUInt32(parser).value;
+  const start = parser.pos;
+  parser.pos = start + size;
+  const arr = Array.from(parser.data.slice(start, parser.pos)).map(
+    m => m > 0);
+  return new Types.VectorBool(arr);
 }
 
-function readVectorChar(parser: BinaryDecoder): Uint8Array {
+function readChar(parser: BinaryDecoder): Types.Char {
+  parser.pos += 1;
+  return new Types.Char(parser.data[parser.pos - 1]);
+}
+
+function readVectorChar(parser: BinaryDecoder): Types.VectorChar {
   const size = readUInt32(parser).value;
   parser.pos += size;
-  return parser.data.slice(parser.pos - size, parser.pos - 1);
+  return new Types.VectorChar(parser.data.slice(parser.pos - size, parser.pos - 1));
 }
 
 function readString(parser: BinaryDecoder): Types.String {
@@ -151,7 +146,7 @@ function parserUndefined(parser: BinaryDecoder, type: number): Types.Hash {
 
 const parsers = [
   readBool, // Bool = 0
-  makeVectorReader(readBool, Types.VectorBool), // readVectorBool, // VectorBool = 1
+  readVectorBool, // VectorBool = 1
   readChar, // Char = 2
   readVectorChar, // VectorChar = 3
   readInt8, // Int8 = 4
@@ -190,6 +185,15 @@ const parsers = [
   readVectorChar, // ByteArray = 37
 ];
 
+function getParser(typeNumber: number) {
+  const parser = parsers[typeNumber];
+  if (typeof parser != "function") {
+    throw new Error('failed to find parser for type ' + typeNumber);
+  }
+  return parser;
+}
+
+
 class BinaryDecoder {
   dataview: DataView;
 
@@ -214,14 +218,14 @@ class BinaryDecoder {
     return this.readHash();
   }
 
-  readVectorHash(): Types.Hash[] {
+  readVectorHash(): Types.VectorHash {
     let size = readUInt32(this).value;
-    const ret: Types.Hash[] = [];
+    const ret: Types.HashValue[] = [];
     while (size > 0) {
-      ret.push(this.readHash());
+      ret.push(this.readHash().value_);
       size -= 1;
     }
-    return ret;
+    return new Types.VectorHash(ret);
   }
 
   readHash(): Types.Hash {
@@ -235,15 +239,19 @@ class BinaryDecoder {
       while (asize > 0) {
         const attrKey = this.readKey();
         const attrType = readUInt32(this).value;
-        const attrValue = parsers[attrType](this);
+        const attrValue = getParser(attrType)(this);
         attrs[attrKey] = attrValue;
         asize -= 1;
       }
-      const value = parsers[hashType](this);
+      const value = getParser(hashType)(this);
       ret[key] = { value, attrs };
       size -= 1;
     }
     return new Types.Hash(ret);
+  }
+
+  readSchema(): Types.Schema {
+    return readSchema(this);
   }
 }
 
