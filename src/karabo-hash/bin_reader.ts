@@ -63,14 +63,8 @@ function readVectorBool(parser: BinaryDecoder): Types.VectorBool {
   const size = readUInt32(parser).value;
   const start = parser.pos;
   parser.pos = start + size;
-  const arr = new Array<boolean>(size);
-  parser.data.slice(start, parser.pos).forEach((element, index) => {
-    if (element > 0) {
-      arr[index] = true;
-    } else {
-      arr[index] = false;
-    }
-  });
+  const arr = Array.from(parser.data.slice(start, parser.pos)).map(
+    m => m > 0);
   return new Types.VectorBool(arr);
 }
 
