@@ -122,8 +122,8 @@ function encodeVectorHash(parser: BinaryEncoder, data: Types.HashValue[]): Array
   // Writes each string in the vector to its own ArrayBuffer
   const strBuffers: Uint8Array[] = [];
   let stringsLength = 0;
-  for (let i = 0; i < data.length; i++) {
-    const strBuffer = parser.encodeHashValue(data[i]);
+  for (let i = 0; i < data.value.length; i++) {
+    const strBuffer = parser.encodeHashValue(data.value[i]);
     stringsLength += strBuffer.byteLength;
     strBuffers.push(new Uint8Array(strBuffer.slice(0)));
   }
