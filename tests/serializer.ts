@@ -43,7 +43,22 @@ describe("binary", function() {
             "uint32PropertyReadOnly", "floatPropertyReadOnly", "uint8PropertyReadOnly"];
         for (const key of keys) {
             expect(hsh.value[key].value.value_).to.equal(new_hsh.value[key].value.value_);
-        }        
+        }
+        const read_table = hsh.value["table"].value.value_;
+        const new_table = hsh.value["table"].value.value_;
+        expect(read_table.length).to.be.equal(new_table.length);
+        for (const i in [0,1]) {
+            const read = read_table[i];
+            const new_ = new_table[i];
+            const read_keys = Object.keys(read).map((key) => {return key;});
+            const new_keys = Object.keys(new_).map((key) => {return key;});
+            expect(read_keys).to.be.deep.equal(new_keys);
+            expect(read["e1"].value.value_).to.be.equal(new_["e1"].value.value_);
+            expect(read["e2"].value.value_).to.be.equal(new_["e2"].value.value_);
+            expect(read["e3"].value.value_).to.be.equal(new_["e3"].value.value_);
+            expect(read["e4"].value.value_).to.be.equal(new_["e4"].value.value_);
+            expect(read["e5"]).to.be.equal(new_["e5"]);
+        }
     });
 
     it('schema', function() {
