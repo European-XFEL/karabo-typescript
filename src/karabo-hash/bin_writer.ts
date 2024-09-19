@@ -120,13 +120,12 @@ function encodeVectorString(parser: BinaryEncoder, data: string[]): ArrayBuffer 
 
 function encodeVectorHash(parser: BinaryEncoder, data: Types.HashValue[]): ArrayBuffer {
   // Writes each string in the vector to its own ArrayBuffer
-  const strBuffers: Uint8Array[] = [];
   let stringsLength = 0;
-  for (let i = 0; i < data.length; i++) {
-    const strBuffer = parser.encodeHashValue(data[i]);
+  const strBuffers = data.map((element) => {
+    const strBuffer = parser.encodeHashValue(element);
     stringsLength += strBuffer.byteLength;
-    strBuffers.push(new Uint8Array(strBuffer.slice(0)));
-  }
+    return strBuffer.slice(0);
+  });
   // Allocates a buffer for the vector of strings and an initial UInt32 for
   // the length of the vector of strings.
   const ret = new Uint8Array(4 + stringsLength);
@@ -136,8 +135,8 @@ function encodeVectorHash(parser: BinaryEncoder, data: Types.HashValue[]): Array
   let offset = 4;
   // Writes the previously serialized strings to the buffer
   for (const strBuffer of strBuffers) {
-    ret.set(strBuffer, offset);
-    offset += strBuffer.length;
+    ret.set(new Uint8Array(strBuffer.slice(0)), offset);
+    offset += strBuffer.byteLength;
   }
   return ret;
 }
