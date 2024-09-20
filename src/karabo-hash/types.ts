@@ -65,6 +65,47 @@ export class Hash {
     return this.value_;
   }}
 
+
+export function makeHash(obj: object) : Hash {
+  const hsh = new HashValue();
+  let type_ = HashTypes.Bool;
+  let value_ : any = false;
+  Object.entries(obj).forEach(([key, value]) => {
+    switch(typeof(value)) {
+      case "number":
+        if(Number.isInteger(value)) {
+          type_ = HashTypes.Int32;
+          value_ = value;
+        } else {
+          type_ = HashTypes.Float64;
+          value_ = value;
+        }
+        break;
+      case "string":
+        type_ = HashTypes.String;
+        value_ = value;
+        break;
+      case "undefined":
+        break;
+      case "object":
+        if (value.attrs !== undefined && value.value !== undefined) {
+          hsh[key] = value;
+          return;
+        }
+        type_ = HashTypes.Hash;
+        value_ = makeHash(value);
+        break;
+    }
+    hsh[key] = {
+      value: {
+        value_: value_,
+        type_: type_
+      },
+      attrs: {}
+    };
+  })
+  return new Hash(hsh);
+}
 export class VectorHash {
   readonly type_ = HashTypes.VectorHash;
 
