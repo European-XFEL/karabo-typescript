@@ -271,9 +271,9 @@ class BinaryEncoder {
     const buffers: ArrayBuffer[] = [new ArrayBuffer(4)];
     let totalSize = 4;
     let keyCount = 0;
-    Object.keys(hashValue).forEach((key) => {
+    Object.entries(hashValue).forEach(([key, hashElement]) => {
       keyCount += 1;
-      const { value, attrs } = hashValue[key];
+      const { value, attrs } = hashElement;
       const keyBuff = this.encodeKey(key);
       totalSize += keyBuff.byteLength;
       buffers.push(keyBuff);
@@ -283,9 +283,8 @@ class BinaryEncoder {
       buffers.push(attrCounfBuff);
       totalSize += 4;
       let attrsCount = 0;
-      Object.keys(attrs).forEach((attrsKey) => {
+      Object.entries(attrs).forEach(([attrsKey, attrValue]) => {
         attrsCount += 1;
-        const attrValue = attrs[attrsKey];
         const ak = this.encodeKey(attrsKey);
         const av = this.encodeValue(attrValue);
         buffers.push(ak);

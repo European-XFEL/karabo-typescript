@@ -65,6 +65,70 @@ export class Hash {
     return this.value_;
   }}
 
+function getType_and_Value(value:any) {
+  switch(typeof(value)) {
+    case "number":
+      if(Number.isInteger(value)) {
+        return [HashTypes.Int32, value];
+      } else {
+        return [HashTypes.Float64, value];
+      }
+    case "string":
+      return [HashTypes.String, value];
+    case "object":
+      if (value.constructor === Array) {
+        if (value.length ==0) {
+          return [HashTypes.VectorString, []];
+        }
+        const [sub_type, sub_value] = getType_and_Value(value[0]);
+        switch (sub_type) {
+          case HashTypes.Int32:
+            return [HashTypes.VectorInt32, value];
+          case HashTypes.Float64:
+            return [HashTypes.VectorFloat64, value];
+          case HashTypes.Bool:
+            return [HashTypes.VectorBool, value];
+          case HashTypes.String:
+            return [HashTypes.VectorString, value];
+          case HashTypes.Hash:
+            return [HashTypes.VectorHash, value.map(
+              (element : any) => {
+              if (element.attrs !== undefined && element.value !== undefined) {
+                return element;
+              }
+              return makeHashValue(element);
+            })];
+        }
+      }
+      if (value.attrs !== undefined && value.value !== undefined) {
+        return [HashTypes.Hash, value];
+      }
+      return [HashTypes.Hash, makeHashValue(value)];
+    case "boolean":
+      return [HashTypes.Bool, value];
+    }
+  return [null, null];
+}
+
+function makeHashValue(obj: object) : HashValue {
+  const hsh = new HashValue();
+  Object.entries(obj).forEach(([key, value]) => {
+    const [type_, value_] = getType_and_Value(value);
+    hsh[key] = {
+      value: {
+        value_: value_,
+        type_: type_
+      },
+      attrs: {}
+    };
+  })
+  return hsh;
+}
+
+export function makeHash(obj: object) : Hash {
+  return new Hash(makeHashValue(obj));
+}
+
 export class VectorHash {
   readonly type_ = HashTypes.VectorHash;
 
