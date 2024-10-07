@@ -2,6 +2,8 @@ test:
   image: node:latest
   script:
     - npm clean-install
+    - npm run build
     - cd tests
     - npm clean-install
+    - npm run build
     - npm run coverage

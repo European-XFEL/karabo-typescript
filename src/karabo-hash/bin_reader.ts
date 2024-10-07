@@ -1,5 +1,4 @@
 import * as Types from './types';
-import { TextDecoder } from 'util';
 
 function readUInt8(parser: BinaryDecoder): Types.UInt8 {
   parser.pos += 1;

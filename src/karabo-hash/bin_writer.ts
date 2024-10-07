@@ -1,5 +1,4 @@
 import * as Types from './types';
-import { TextEncoder } from 'util';
 
 function encodeInt8(parser: BinaryEncoder, data: number): ArrayBuffer {
   const bin = new ArrayBuffer(1);

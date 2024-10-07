@@ -1,6 +1,4 @@
-import * as mocha from "mocha";
-import chai from 'chai';
-const expect = chai.expect;
+import {expect} from 'chai';
 
 import { HashTypes, makeHash } from 'karabo-ts';
 

@@ -4,24 +4,22 @@
     "description": "Karabo Hash Container library Consumre",
     "scripts": {
         "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'karabo-ts-tests/*.ts'",
-        "coverage": "nyc --reporter=text -r lcov -e .ts -x \"*.test.ts\" npm run test",
-        "build": "tsc",
-        "lint": "tslint -p tsconfig.json"
+        "build": "tsc"
     },
     "author": "asilenzi",
     "license": "ISC",
     "devDependencies": {
-        "@types/chai": "^4.2.21",
-        "@types/mocha": "^9.1.1",
-        "chai": "^4.3.4",
+        "@types/chai": "^5.0.0",
+        "@types/mocha": "^10.0.8",
+        "chai": "^5.1.1",
         "cross-env": "^7.0.3",
-        "karabo-ts": "file:/..",
-        "mocha": "^9.1.1",
-        "nyc": "^15.1.0",
-        "prettier": "^2.4.0",
+        "karabo-ts": "file:..",
+        "mocha": "^10.7.3",
+        "prettier": "^3.3.3",
         "ts-node": "^10.2.1",
         "tslint": "^5.20.1",
         "tslint-config-prettier": "^1.18.0",
+        "tsx": "^4.19.1",
         "typescript": "^5.6.2"
     }
 }
