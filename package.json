@@ -2,7 +2,11 @@
   "name": "karabo-ts",
   "version": "1.0.0",
   "description": "Karabo Hash Container library",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
   "scripts": {
     "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'tests/**/*.ts'",
     "coverage": "nyc --reporter=text -r lcov -e .ts -x \"*.test.ts\" npm run test",
