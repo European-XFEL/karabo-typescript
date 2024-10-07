@@ -63,8 +63,7 @@ function readVectorBool(parser: BinaryDecoder): Types.VectorBool {
   const size = readUInt32(parser).value;
   const start = parser.pos;
   parser.pos = start + size;
-  const arr = Array.from(parser.data.slice(start, parser.pos)).map(
-    m => m > 0);
+  const arr = Array.from(parser.data.slice(start, parser.pos)).map((m) => m > 0);
   return new Types.VectorBool(arr);
 }
 
@@ -187,12 +186,11 @@ const parsers = [
 
 function getParser(typeNumber: number) {
   const parser = parsers[typeNumber];
-  if (typeof parser != "function") {
+  if (typeof parser != 'function') {
     throw new Error('failed to find parser for type ' + typeNumber);
   }
   return parser;
 }
-
 
 class BinaryDecoder {
   dataview: DataView;

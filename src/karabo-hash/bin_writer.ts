@@ -141,7 +141,6 @@ function encodeVectorHash(parser: BinaryEncoder, data: Types.HashValue[]): Array
   return ret;
 }
 
-
 function makeVectorEncoder(elementEncoder: any) {
   return (parser: BinaryEncoder, data: number[]) => {
     const sizeBuffer = new ArrayBuffer(4);
@@ -252,7 +251,6 @@ class BinaryEncoder {
     }
   }
 
-
   encodeKey(key: string): ArrayBuffer {
     const buff = this.encoder.encode(key);
     const ret = new Uint8Array(buff.length + 1);
@@ -279,7 +277,7 @@ class BinaryEncoder {
       buffers.push(keyBuff);
       buffers.push(encodeUInt32(this, value.type_));
       totalSize += 4;
-      const attrCounfBuff =  encodeUInt32(this, 0);
+      const attrCounfBuff = encodeUInt32(this, 0);
       buffers.push(attrCounfBuff);
       totalSize += 4;
       let attrsCount = 0;
@@ -293,7 +291,7 @@ class BinaryEncoder {
         totalSize += 4;
         buffers.push(av);
         totalSize += av.byteLength;
-        });
+      });
       new DataView(attrCounfBuff).setUint32(0, attrsCount, true);
       const valueBuff = this.encodeValue(value);
       buffers.push(valueBuff);
