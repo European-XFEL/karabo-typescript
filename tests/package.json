@@ -1,0 +1,26 @@
+{
+    "name": "karabo-ts-test",
+    "version": "1.0.0",
+    "description": "Karabo Hash Container library Consumre",
+    "scripts": {
+        "test": "mocha 'karabo-ts-tests/*.ts'",
+        "build": "tsc"
+    },
+    "author": "asilenzi",
+    "license": "ISC",
+    "devDependencies": {
+        "@types/chai": "^5.0.0",
+        "@types/mocha": "^10.0.8",
+        "chai": "^5.1.1",
+        "cross-env": "^7.0.3",
+        "mocha": "^10.7.3",
+        "prettier": "^3.3.3",
+        "tslint": "^5.20.1",
+        "tslint-config-prettier": "^1.18.0",
+        "tsx": "^4.19.1"
+    },
+    "dependencies": {
+        "karabo-ts": "file:..",
+        "typescript": "^5.6.2"
+    }
+}

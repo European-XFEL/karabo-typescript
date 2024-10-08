@@ -1,8 +1,7 @@
-import chai from 'chai';
+import {expect} from 'chai';
 import fs from 'fs';
-const expect = chai.expect;
 
-import { BinaryDecoder, BinaryEncoder, Hash, HashValue, Schema , Attributes, UInt32} from '../src/index'
+import { BinaryDecoder, BinaryEncoder, Hash} from 'karabo-ts';
 
 // to be able to print BigInt https://stackoverflow.com/questions/65152373/typescript-serialize-bigint-in-json
 (BigInt.prototype as any).toJSON = function() {
@@ -12,7 +11,7 @@ import { BinaryDecoder, BinaryEncoder, Hash, HashValue, Schema , Attributes, UIn
 describe("binary", function() {
 
     it('reading', function() {
-        const data = fs.readFileSync('./tests/conf_hash.bin');
+        const data = fs.readFileSync('./karabo-ts-tests/conf_hash.bin');
         const parser = new BinaryDecoder(data);
         const hsh = parser.read();
         //process.stdout.write(JSON.stringify(hsh));
@@ -30,7 +29,7 @@ describe("binary", function() {
     });
 
     it('writing', function() {
-        const data = fs.readFileSync('./tests/conf_hash.bin');
+        const data = fs.readFileSync('./karabo-ts-tests/conf_hash.bin');
         const parser = new BinaryDecoder(data);
         const hsh = parser.read();
         const encoder = new BinaryEncoder();
@@ -62,9 +61,10 @@ describe("binary", function() {
     });
 
     it('schema', function() {
-        const data = fs.readFileSync('./tests/schema_hash.bin');
+        const data = fs.readFileSync('./karabo-ts-tests/schema_hash.bin');
         const parser = new BinaryDecoder(data);
         const schema = parser.readSchema();
+        expect(schema.value_.name).to.be.equal("PropertyTest");
     });
 
 })

@@ -63,21 +63,22 @@ export class Hash {
 
   get value(): HashValue {
     return this.value_;
-  }}
+  }
+}
 
-function getType_and_Value(value:any) {
-  switch(typeof(value)) {
-    case "number":
-      if(Number.isInteger(value)) {
+function getType_and_Value(value: any) {
+  switch (typeof value) {
+    case 'number':
+      if (Number.isInteger(value)) {
         return [HashTypes.Int32, value];
       } else {
         return [HashTypes.Float64, value];
       }
-    case "string":
+    case 'string':
       return [HashTypes.String, value];
-    case "object":
+    case 'object':
       if (value.constructor === Array) {
-        if (value.length ==0) {
+        if (value.length == 0) {
           return [HashTypes.VectorString, []];
         }
         const [sub_type, sub_value] = getType_and_Value(value[0]);
@@ -91,41 +92,43 @@ function getType_and_Value(value:any) {
           case HashTypes.String:
             return [HashTypes.VectorString, value];
           case HashTypes.Hash:
-            return [HashTypes.VectorHash, value.map(
-              (element : any) => {
-              if (element.attrs !== undefined && element.value !== undefined) {
-                return element;
-              }
-              return makeHashValue(element);
-            })];
+            return [
+              HashTypes.VectorHash,
+              value.map((element: any) => {
+                if (element.attrs !== undefined && element.value !== undefined) {
+                  return element;
+                }
+                return makeHashValue(element);
+              }),
+            ];
         }
       }
       if (value.attrs !== undefined && value.value !== undefined) {
         return [HashTypes.Hash, value];
       }
       return [HashTypes.Hash, makeHashValue(value)];
-    case "boolean":
+    case 'boolean':
       return [HashTypes.Bool, value];
-    }
+  }
   return [null, null];
 }
 
-function makeHashValue(obj: object) : HashValue {
+function makeHashValue(obj: object): HashValue {
   const hsh = new HashValue();
   Object.entries(obj).forEach(([key, value]) => {
     const [type_, value_] = getType_and_Value(value);
     hsh[key] = {
       value: {
         value_: value_,
-        type_: type_
+        type_: type_,
       },
-      attrs: {}
+      attrs: {},
     };
-  })
+  });
   return hsh;
 }
 
-export function makeHash(obj: object) : Hash {
+export function makeHash(obj: object): Hash {
   return new Hash(makeHashValue(obj));
 }
 

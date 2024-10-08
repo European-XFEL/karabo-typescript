@@ -1,7 +1,6 @@
-import chai from 'chai';
-const expect = chai.expect;
+import {expect} from 'chai';
 
-import { HashTypes, makeHash } from '../src/index'
+import { HashTypes, makeHash } from 'karabo-ts';
 
 // to be able to print BigInt https://stackoverflow.com/questions/65152373/typescript-serialize-bigint-in-json
 (BigInt.prototype as any).toJSON = function() {
@@ -84,8 +83,6 @@ describe("helper", function() {
                 key1: [{sub_key: 1}, {sub_key: 2}],
             });
 
-            process.stdout.write("\n");
-            process.stdout.write(JSON.stringify(hsh));
             expect(hsh.type_).to.be.equal(HashTypes.Hash);
             expect(hsh.value_.key1.value.type_).to.be.equal(HashTypes.VectorHash);
             expect(hsh.value_.key1.attrs).to.be.an('object').that.is.empty;
