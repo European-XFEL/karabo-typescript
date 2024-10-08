@@ -1,6 +1,6 @@
 {
   "name": "karabo-ts",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Karabo Hash Container library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,9 +18,10 @@
   "devDependencies": {
     "cross-env": "^7.0.3",
     "prettier": "^2.4.0",
-    "ts-node": "^10.2.1",
     "tslint": "^5.20.1",
-    "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.3.3"
+    "tslint-config-prettier": "^1.18.0"
+  },
+  "dependencies": {
+    "typescript": "^5.6.2"
   }
 }
