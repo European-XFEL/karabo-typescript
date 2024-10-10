@@ -87,6 +87,22 @@ export class Hash {
     const attrs = this.getAttributes(path);
     return (attrs !== undefined)? attrs[attributeKey].value_ : undefined;
   }
+
+  public *items() {
+    for (const [key, node] of Object.entries(this.value_)) {
+      yield [key, node.value.value_];
+    }
+  }
+
+  public *iterall() {
+    for (const [key, node] of Object.entries(this.value_)) {
+      const simple_attrs : { [key: string]: any } = {};
+      for (const [key, value] of Object.entries(node.attrs)) {
+          simple_attrs[key] = value.value_;
+      }
+      yield [key, node.value.value_, simple_attrs];
+    }
+  }
 }
 
 function getType_and_Value(value: any) {

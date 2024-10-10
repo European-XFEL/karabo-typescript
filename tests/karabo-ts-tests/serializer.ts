@@ -39,6 +39,27 @@ describe("binary", function() {
         expect(hsh.getAttributeValue("uint8PropertyReadOnly", "tid")).to.be.equal(0n);
         expect(hsh.getAttributeValue("uint8PropertyReadOnly", "alarmCondition")).to.be.equal("none");
         expect(hsh).to.be.instanceOf(Hash);
+        for ( const [key, value, attrs] of hsh.iterall()) {
+            if (key == "uint32PropertyReadOnly") {
+                expect(value).not.to.be.instanceOf(Object);
+                expect(value).to.equal(32000000);
+                expect(attrs["alarmCondition"]).to.equal("none");
+            }
+            if (key == "output") {
+                expect(value).to.be.instanceOf(Object);
+                expect(value).to.have.keys([
+                    "bytesRead",
+                    "bytesWritten",
+                    "connections",
+                    "distributionMode",
+                    "hostname",
+                    "noInputShared",
+                    "port",
+                    "schema",
+                    "updatePeriod"]);
+            }
+        }
+
     });
 
     it('writing', function() {
@@ -78,6 +99,28 @@ describe("binary", function() {
         const parser = new BinaryDecoder(data);
         const schema = parser.readSchema();
         expect(schema.value_.name).to.be.equal("PropertyTest");
+        // this is to test the iterall 
+        for ( const [key, value, attrs] of schema.value_.hash.iterall()) {
+            if (key == "uint32PropertyReadOnly") {
+                expect(value).to.equal(0);
+                expect(attrs["nodeType"]).to.equal(0);
+                expect(attrs["valueType"]).to.equal("UINT32");
+                expect(attrs["displayedName"]).to.equal("UInt32 property read-only");
+            }
+            if (key == "output") {
+                expect(value).to.be.instanceOf(Object);
+                expect(value).to.have.keys([
+                    "bytesRead",
+                    "bytesWritten",
+                    "connections",
+                    "distributionMode",
+                    "hostname",
+                    "noInputShared",
+                    "port",
+                    "schema",
+                    "updatePeriod"]);
+            }
+        }
     });
 
 })
