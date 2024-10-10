@@ -1,6 +1,6 @@
 {
   "name": "karabo-ts",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "Karabo Hash Container library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

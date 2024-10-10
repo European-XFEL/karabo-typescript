@@ -61,8 +61,31 @@ export class Hash {
 
   constructor(public value_: HashValue) {}
 
-  get value(): HashValue {
-    return this.value_;
+  getNode(path: string) {
+    const ret = path.split('.').reduce(
+      (currentNode: HashNode, subPath) => {
+        if (currentNode === undefined || currentNode.value.type_ !== HashTypes.Hash || !(subPath in currentNode.value.value_)) {
+          return undefined;
+        } else {
+          return currentNode.value.value_[subPath];
+        }
+    }, {value: this, attrs:{}});
+    return ret;
+  }
+
+  getValue(path: string) {
+    const node = this.getNode(path);
+    return (node !== undefined)? node.value.value_ : undefined;
+  }
+
+  getAttributes(path: string) {
+    const node = this.getNode(path);
+    return (node !== undefined)? node.attrs : undefined;
+  }
+
+  getAttributeValue(path: string, attributeKey: string) {
+    const attrs = this.getAttributes(path);
+    return (attrs !== undefined)? attrs[attributeKey].value_ : undefined;
   }
 }
 
@@ -98,7 +121,7 @@ function getType_and_Value(value: any) {
                 if (element.attrs !== undefined && element.value !== undefined) {
                   return element;
                 }
-                return makeHashValue(element);
+                return new Hash(makeHashValue(element));
               }),
             ];
         }
@@ -135,12 +158,12 @@ export function makeHash(obj: object): Hash {
 export class VectorHash {
   readonly type_ = HashTypes.VectorHash;
 
-  constructor(public value_: HashValue[]) {}
+  constructor(public value_: Hash[]) {}
 }
 
 export interface SchemaValue {
   name: string;
-  hash: HashValue;
+  hash: Hash;
 }
 
 export class Schema {
@@ -158,10 +181,6 @@ class Integer {
 
   constructor(value: number) {
     this.value_ = Math.min(Math.max(value, this.min), this.max);
-  }
-
-  get value(): number {
-    return this.value_;
   }
 }
 
@@ -301,10 +320,6 @@ export class UInt64 {
   constructor(value: bigint) {
     this.value_ = BigInt.asUintN(64, value);
   }
-
-  get value(): bigint {
-    return this.value_;
-  }
 }
 
 export class VectorUInt64 implements KaraboType {
@@ -325,10 +340,6 @@ export class Int64 {
   constructor(value: bigint) {
     this.value_ = BigInt.asIntN(64, value);
   }
-
-  get value(): bigint {
-    return this.value_;
-  }
 }
 
 export class VectorInt64 implements KaraboType {
@@ -341,10 +352,6 @@ export class Float32 implements KaraboType {
   readonly type_ = HashTypes.Float32;
 
   constructor(public value_: number) {}
-
-  get value(): number {
-    return this.value_;
-  }
 }
 
 export class VectorFloat32 implements KaraboType {
@@ -357,10 +364,6 @@ export class Float64 implements KaraboType {
   readonly type_ = HashTypes.Float32;
 
   constructor(public value_: number) {}
-
-  get value(): number {
-    return this.value_;
-  }
 }
 
 export class VectorFloat64 implements KaraboType {

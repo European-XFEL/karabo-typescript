@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "description": "Karabo Hash Container library Consumre",
     "scripts": {
-        "test": "mocha 'karabo-ts-tests/*.ts'",
+        "test": "cd ..; npm run build; cd tests; npm run build; mocha 'karabo-ts-tests/*.ts'",
         "build": "tsc"
     },
     "author": "asilenzi",
@@ -11,6 +11,7 @@
     "devDependencies": {
         "@types/chai": "^5.0.0",
         "@types/mocha": "^10.0.8",
+        "@types/node": "^22.7.5",
         "chai": "^5.1.1",
         "cross-env": "^7.0.3",
         "mocha": "^10.7.3",

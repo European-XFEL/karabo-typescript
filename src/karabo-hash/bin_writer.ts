@@ -117,11 +117,11 @@ function encodeVectorString(parser: BinaryEncoder, data: string[]): ArrayBuffer 
   return ret;
 }
 
-function encodeVectorHash(parser: BinaryEncoder, data: Types.HashValue[]): ArrayBuffer {
+function encodeVectorHash(parser: BinaryEncoder, data: Types.Hash[]): ArrayBuffer {
   // Writes each string in the vector to its own ArrayBuffer
   let stringsLength = 0;
   const strBuffers = data.map((element) => {
-    const strBuffer = parser.encodeHashValue(element);
+    const strBuffer = parser.encodeHashValue(element.value_);
     stringsLength += strBuffer.byteLength;
     return strBuffer.slice(0);
   });
@@ -167,7 +167,7 @@ function encodeSchema(parser: BinaryEncoder, schema: Types.SchemaValue): ArrayBu
   const nameBuff = parser.encodeKey(schema.name);
   totalSize += nameBuff.byteLength;
   buffers.push(nameBuff);
-  const hashBuff = parser.encodeHashValue(schema.hash);
+  const hashBuff = parser.encodeHashValue(schema.hash.value_);
   totalSize += hashBuff.byteLength;
   buffers.push(hashBuff);
   new DataView(buffers[0]).setUint32(0, totalSize, true);
@@ -260,7 +260,7 @@ class BinaryEncoder {
   }
 
   encodeHash(data: Types.Hash): ArrayBuffer {
-    const hashValue = data.value;
+    const hashValue = data.value_;
     return this.encodeHashValue(hashValue);
   }
 

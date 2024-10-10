@@ -18,9 +18,11 @@ describe("helper", function() {
             expect(hsh.value_.key1.value.type_).to.be.equal(HashTypes.Int32);
             expect(hsh.value_.key1.value.value_).to.be.equal(1);
             expect(hsh.value_.key1.attrs).to.be.an('object').that.is.empty;
+            expect(hsh.getValue("key1")).to.be.equal(1);
             expect(hsh.value_.key2.value.type_).to.be.equal(HashTypes.String);
             expect(hsh.value_.key2.value.value_).to.be.equal("testString");
             expect(hsh.value_.key2.attrs).to.be.an('object').that.is.empty;
+            expect(hsh.getValue("key2")).to.be.equal("testString");
         }
         {
             const hsh = makeHash({
@@ -30,6 +32,7 @@ describe("helper", function() {
             expect(hsh.value_.key1.value.type_).to.be.equal(HashTypes.VectorString);
             expect(hsh.value_.key1.value.value_).to.be.deep.equal(["testString"]);
             expect(hsh.value_.key1.attrs).to.be.an('object').that.is.empty;
+            expect(hsh.getValue("key1")).to.be.deep.equal(["testString"]);
         }
         {
             const hsh = makeHash({
@@ -39,6 +42,7 @@ describe("helper", function() {
             expect(hsh.value_.key1.value.type_).to.be.equal(HashTypes.VectorInt32);
             expect(hsh.value_.key1.value.value_).to.be.deep.equal([1]);
             expect(hsh.value_.key1.attrs).to.be.an('object').that.is.empty;
+            expect(hsh.getValue("key1")).to.be.deep.equal([1]);
         }
         {
             const hsh = makeHash({
@@ -48,6 +52,7 @@ describe("helper", function() {
             expect(hsh.value_.key1.value.type_).to.be.equal(HashTypes.VectorFloat64);
             expect(hsh.value_.key1.value.value_).to.be.deep.equal([3.14]);
             expect(hsh.value_.key1.attrs).to.be.an('object').that.is.empty;
+            expect(hsh.getValue("key1")).to.be.deep.equal([3.14]);
         }
         {
             const hsh = makeHash({
@@ -57,6 +62,7 @@ describe("helper", function() {
             expect(hsh.value_.key1.value.type_).to.be.equal(HashTypes.Float64);
             expect(hsh.value_.key1.value.value_).to.be.deep.equal(3.14);
             expect(hsh.value_.key1.attrs).to.be.an('object').that.is.empty;
+            expect(hsh.getValue("key1")).to.be.deep.equal(3.14);
         }
         {
             const hsh = makeHash({
@@ -66,6 +72,7 @@ describe("helper", function() {
             expect(hsh.value_.key1.value.type_).to.be.equal(HashTypes.VectorString);
             expect(hsh.value_.key1.value.value_).to.be.deep.equal([]);
             expect(hsh.value_.key1.attrs).to.be.an('object').that.is.empty;
+            expect(hsh.getValue("key1")).to.be.deep.equal([]);
         }
         {
             const hsh = makeHash({
@@ -77,6 +84,9 @@ describe("helper", function() {
             expect(hsh.value_.key1.value.value_.sub_key.value.value_).to.be.equal(1);
             expect(hsh.value_.key1.value.value_.sub_key.value.type_).to.be.equal(HashTypes.Int32);
             expect(hsh.value_.key1.value.value_.sub_key.attrs).to.be.an('object').that.is.empty;
+            expect(hsh.getValue("key1.sub_key")).to.be.equal(1);
+            // hsh.getValue("key1") returns an HashValue and not a Hash
+            expect(hsh.getValue("key1")["sub_key"].value.value_).to.be.equal(1);
         }
         {
             const hsh = makeHash({
@@ -86,8 +96,10 @@ describe("helper", function() {
             expect(hsh.type_).to.be.equal(HashTypes.Hash);
             expect(hsh.value_.key1.value.type_).to.be.equal(HashTypes.VectorHash);
             expect(hsh.value_.key1.attrs).to.be.an('object').that.is.empty;
-            expect(hsh.value_.key1.value.value_[0].sub_key.value.value_).to.be.equal(1);
-            expect(hsh.value_.key1.value.value_[1].sub_key.value.value_).to.be.equal(2);
+            expect(hsh.value_.key1.value.value_[0].value_.sub_key.value.value_).to.be.equal(1);
+            expect(hsh.value_.key1.value.value_[1].value_.sub_key.value.value_).to.be.equal(2);
+            expect(hsh.getValue("key1")[0].getValue("sub_key")).to.be.equal(1);
+
         }
     });
 
