@@ -117,7 +117,7 @@ function encodeVectorHash(parser: BinaryEncoder, data: Types.HashValue[]): Array
 }
 
 function makeVectorEncoder<Type>(elementEncoder: any) {
-  return (parser: BinaryEncoder, data: Type[]) => {
+  return (parser: BinaryEncoder, data: Type[]) : ArrayBuffer => {
     const sizeBuffer = new ArrayBuffer(4);
     new DataView(sizeBuffer).setUint32(0, data.length, true);
     const slice_ = [sizeBuffer];
@@ -221,7 +221,7 @@ class BinaryEncoder {
     } else if (value instanceof Types.Schema) {
         return encodeSchema(this, value.value_);
     }
-    return new ArrayBuffer(0);
+    throw new Error(`failed to encode type ${value.type_} ${JSON.stringify(value)}`);
   }
 
   encodeKey(key: string): ArrayBuffer {
@@ -234,8 +234,7 @@ class BinaryEncoder {
   }
 
   encodeHash(data: Types.Hash): ArrayBuffer {
-    const hashValue = data.value_;
-    return this.encodeHashValue(hashValue);
+    return this.encodeHashValue(data.value_);
   }
 
   encodeHashValue(hashValue: Types.HashValue): ArrayBuffer {

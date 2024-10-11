@@ -38,7 +38,18 @@ export enum HashTypes {
   ByteArray = 37,
 }
 
-type ValueTypes = number|string|number[]|string[]|HashValue|HashValue[]|SchemaValue|boolean|boolean[]|Uint8Array;
+type ValueTypes = number|
+                  number[]|
+                  string|
+                  string[]|
+                  bigint|
+                  bigint[]|
+                  HashValue|
+                  HashValue[]|
+                  SchemaValue|
+                  boolean|
+                  boolean[]|
+                  Uint8Array;
 
 export interface KaraboType {
   type_: HashTypes;
@@ -58,7 +69,7 @@ export class HashValue {
   [key: string]: HashNode;
 }
 
-export class Hash {
+export class Hash implements KaraboType{
   readonly type_ = HashTypes.Hash;
 
   constructor(public value_: HashValue) {}
@@ -113,45 +124,47 @@ function getType_and_Value(value: any) {
   switch (typeof value) {
     case 'number':
       if (Number.isInteger(value)) {
-        return [HashTypes.Int32, value];
+        return [Int32, value];
       } else {
-        return [HashTypes.Float64, value];
+        return [Float64, value];
       }
     case 'string':
-      return [HashTypes.String, value];
+      return [String, value];
     case 'object':
       if (value.constructor === Array) {
         if (value.length == 0) {
-          return [HashTypes.VectorString, []];
+          return [VectorString, []];
         }
         const [sub_type, sub_value] = getType_and_Value(value[0]);
         switch (sub_type) {
-          case HashTypes.Int32:
-            return [HashTypes.VectorInt32, value];
-          case HashTypes.Float64:
-            return [HashTypes.VectorFloat64, value];
-          case HashTypes.Bool:
-            return [HashTypes.VectorBool, value];
-          case HashTypes.String:
-            return [HashTypes.VectorString, value];
-          case HashTypes.Hash:
+          case Int32:
+            return [VectorInt32, value];
+          case Float64:
+            return [VectorFloat64, value];
+          case Bool:
+            return [VectorBool, value];
+          case String:
+            return [VectorString, value];
+          case Hash:
             return [
-              HashTypes.VectorHash,
+              VectorHash,
               value.map((element: any) => {
                 if (element.attrs !== undefined && element.value !== undefined) {
                   return element;
                 }
                 return makeHashValue(element);
-              }),
+              })
             ];
+          default:
+            throw new Error(`cannot find suitable karabo type for ${sub_type} ${JSON.stringify(value)}`);
         }
       }
       if (value.attrs !== undefined && value.value !== undefined) {
-        return [HashTypes.Hash, value];
+        return [Hash, value];
       }
-      return [HashTypes.Hash, makeHashValue(value)];
+      return [Hash, makeHashValue(value)];
     case 'boolean':
-      return [HashTypes.Bool, value];
+      return [Bool, value];
   }
   return [null, null];
 }
@@ -159,12 +172,9 @@ function getType_and_Value(value: any) {
 function makeHashValue(obj: object): HashValue {
   const hsh = new HashValue();
   Object.entries(obj).forEach(([key, value]) => {
-    const [type_, value_] = getType_and_Value(value);
+    const [klass, value_] = getType_and_Value(value);
     hsh[key] = {
-      value: {
-        value_: value_,
-        type_: type_,
-      },
+      value: new klass(value_),
       attrs: {},
     };
   });
@@ -220,7 +230,7 @@ function makeInteger(type_: HashTypes, min: number, max: number) {
 
 export const AutoUInt8 = makeInteger(HashTypes.UInt8, 0, 2 ** 8 - 1);
 
-export class UInt8 extends Integer {
+export class UInt8 extends Integer implements KaraboType {
   readonly type_ = HashTypes.UInt8;
 
   readonly min = 0;
@@ -238,7 +248,7 @@ export class VectorUInt8 implements KaraboType {
   constructor(public value_: number[]) {}
 }
 
-export class Int8 extends Integer {
+export class Int8 extends Integer implements KaraboType {
   readonly type_ = HashTypes.Int8;
 
   readonly min = -1 * 2 ** 7;
@@ -256,7 +266,7 @@ export class VectorInt8 implements KaraboType {
   constructor(public value_: number[]) {}
 }
 
-export class UInt16 extends Integer {
+export class UInt16 extends Integer implements KaraboType {
   readonly type_ = HashTypes.UInt16;
 
   readonly min = 0;
@@ -274,7 +284,7 @@ export class VectorUInt16 implements KaraboType {
   constructor(public value_: number[]) {}
 }
 
-export class Int16 extends Integer {
+export class Int16 extends Integer implements KaraboType {
   readonly type_ = HashTypes.Int16;
 
   readonly min = -1 * 2 ** 15;
@@ -292,7 +302,7 @@ export class VectorInt16 implements KaraboType {
   constructor(public value_: number[]) {}
 }
 
-export class UInt32 extends Integer {
+export class UInt32 extends Integer implements KaraboType {
   readonly type_ = HashTypes.UInt32;
 
   readonly min = 0;
@@ -310,7 +320,7 @@ export class VectorUInt32 implements KaraboType {
   constructor(public value_: number[]) {}
 }
 
-export class Int32 extends Integer {
+export class Int32 extends Integer implements KaraboType {
   readonly type_ = HashTypes.Int32;
 
   readonly min = -1 * 2 ** 31;
@@ -328,14 +338,14 @@ export class VectorInt32 implements KaraboType {
   constructor(public value_: number[]) {}
 }
 
-export class UInt64 {
+export class UInt64 implements KaraboType {
   readonly type_ = HashTypes.UInt64;
 
   readonly min = 0;
 
   readonly max = 2 ** 64 - 1;
 
-  protected value_: bigint;
+  public value_: bigint;
 
   constructor(value: bigint) {
     this.value_ = BigInt.asUintN(64, value);
@@ -345,17 +355,17 @@ export class UInt64 {
 export class VectorUInt64 implements KaraboType {
   readonly type_ = HashTypes.VectorInt64;
 
-  constructor(public value_: number[]) {}
+  constructor(public value_: bigint[]) {}
 }
 
-export class Int64 {
+export class Int64 implements KaraboType {
   readonly type_ = HashTypes.Int64;
 
   readonly min = -1 * 2 ** 63;
 
   readonly max = 2 ** 63 - 1;
 
-  protected value_: bigint;
+  public value_: bigint;
 
   constructor(value: bigint) {
     this.value_ = BigInt.asIntN(64, value);
@@ -365,7 +375,7 @@ export class Int64 {
 export class VectorInt64 implements KaraboType {
   readonly type_ = HashTypes.VectorInt64;
 
-  constructor(public value_: number[]) {}
+  constructor(public value_: bigint[]) {}
 }
 
 export class Float32 implements KaraboType {
