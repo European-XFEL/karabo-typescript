@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 import fs from 'fs';
 
-import { BinaryDecoder, BinaryEncoder, Hash} from 'karabo-ts';
+import { BinaryDecoder, BinaryEncoder, Hash, HashValue} from 'karabo-ts';
 
 // to be able to print BigInt https://stackoverflow.com/questions/65152373/typescript-serialize-bigint-in-json
 (BigInt.prototype as any).toJSON = function() {
@@ -15,7 +15,6 @@ describe("binary", function() {
         const parser = new BinaryDecoder(data);
         const hsh = parser.read();
         //process.stdout.write(JSON.stringify(hsh));
-        //process.stdout.write(JSON.stringify(hsh.value["floatPropertyReadOnly"]));
         expect(hsh.value_["deviceId"].value.value_).to.be.equal("Bob");
         expect(hsh.value_["classId"].value.value_).to.be.equal("PropertyTest");
         expect(hsh.value_["alarmCondition"].value.value_).to.be.equal("none");
@@ -57,7 +56,7 @@ describe("binary", function() {
                 expect(attrs["alarmCondition"]).to.equal("none");
             }
             if (key == "output") {
-                expect(value).to.be.instanceOf(Object);
+                expect(value).to.be.instanceOf(HashValue);
                 expect(value).to.have.keys([
                     "bytesRead",
                     "bytesWritten",
@@ -88,20 +87,24 @@ describe("binary", function() {
         for (const key of keys) {
             expect(hsh.value_[key].value.value_).to.equal(new_hsh.value_[key].value.value_);
         }
-        const read_table = hsh.getValue("table");
-        const new_table = new_hsh.getValue("table");
+        let read_table = hsh.getValue("table");
+        let new_table = new_hsh.getValue("table");
+        expect(read_table).to.be.instanceOf(Array<HashValue>);
+        expect(new_table).to.be.instanceOf(Array<HashValue>);
+        read_table = read_table! as unknown as HashValue[];
+        new_table = new_table! as unknown as HashValue[];
         expect(read_table.length).to.be.equal(new_table.length);
         for (const i in [0,1]) {
-            const read = read_table[i];
-            const new_ = new_table[i];
-            const read_keys = Object.keys(read).map((key) => {return key;});
-            const new_keys = Object.keys(new_).map((key) => {return key;});
+            const read = new Hash(read_table[i]);
+            const new_ = new Hash(new_table[i]);
+            const read_keys = Object.keys(read.value_).map((key) => {return key;});
+            const new_keys = Object.keys(new_.value_).map((key) => {return key;});
             expect(read_keys).to.be.deep.equal(new_keys);
             expect(read.getValue("e1")).to.be.equal(new_.getValue("e1"));
             expect(read.getValue("e2")).to.be.equal(new_.getValue("e2"));
             expect(read.getValue("e3")).to.be.equal(new_.getValue("e3"));
             expect(read.getValue("e4")).to.be.equal(new_.getValue("e4"));
-            expect(read.getValue("e5")).to.be.closeTo(new_.getValue("e5"), 0.00001);
+            expect(read.getValue("e5")).to.be.closeTo(new_.getValue("e5") as unknown as number, 0.00001);
         }
     });
 

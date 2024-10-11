@@ -1,5 +1,7 @@
 import * as Types from './types';
 
+type ParserFunction = (parser: BinaryDecoder) => Types.KaraboType;
+
 function readUInt8(parser: BinaryDecoder): Types.UInt8 {
   parser.pos += 1;
   return new Types.UInt8(parser.dataview.getUint8(parser.pos - 1));
@@ -110,19 +112,6 @@ function makeVectorReader(elementReader: any, klass: any) {
   };
 }
 
-// function readVector<T>(
-//   parser: BinaryDecoder,
-//   elementReader: (parser: BinaryDecoder) => T
-// ): T[] {
-//   let size = readUInt32(parser).value_;
-//   const ret: T[] = [];
-//   while (size >= 0) {
-//     ret.push(elementReader(parser));
-//     size -= 1;
-//   }
-//   return ret;
-// }
-
 function readSchema(parser: BinaryDecoder): Types.Schema {
   const l = readUInt32(parser).value_;
   const op = parser.pos;
@@ -183,7 +172,7 @@ const parsers = [
   readVectorChar, // ByteArray = 37
 ];
 
-function getParser(typeNumber: number) {
+function getParser(typeNumber: number) : ParserFunction {
   const parser = parsers[typeNumber];
   if (typeof parser != 'function') {
     throw new Error('failed to find parser for type ' + typeNumber);
@@ -217,9 +206,9 @@ class BinaryDecoder {
 
   readVectorHash(): Types.VectorHash {
     let size = readUInt32(this).value_;
-    const ret: Types.Hash[] = [];
+    const ret = new Array<Types.HashValue>();
     while (size > 0) {
-      ret.push(this.readHash());
+      ret.push(this.readHash().value_);
       size -= 1;
     }
     return new Types.VectorHash(ret);
@@ -227,7 +216,7 @@ class BinaryDecoder {
 
   readHash(): Types.Hash {
     let size = readUInt32(this).value_;
-    const ret: Types.HashValue = {};
+    const ret = new Types.HashValue();
     while (size > 0) {
       const key = this.readKey();
       const hashType = readUInt32(this).value_;

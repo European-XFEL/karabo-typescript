@@ -38,9 +38,11 @@ export enum HashTypes {
   ByteArray = 37,
 }
 
+type ValueTypes = number|string|number[]|string[]|HashValue|HashValue[]|SchemaValue|boolean|boolean[]|Uint8Array;
+
 export interface KaraboType {
   type_: HashTypes;
-  value_: any;
+  value_: ValueTypes;
 }
 
 export interface Attributes {
@@ -63,38 +65,40 @@ export class Hash {
 
   getNode(path: string) {
     const ret = path.split('.').reduce(
-      (currentNode: HashNode, subPath) => {
-        if (currentNode === undefined || currentNode.value.type_ !== HashTypes.Hash || !(subPath in currentNode.value.value_)) {
-          return undefined;
-        } else {
+      (currentNode : HashNode | undefined, subPath : string) => {
+        if (currentNode !== undefined &&
+            currentNode.value.value_ instanceof HashValue &&
+            subPath in currentNode.value.value_)
+        {
           return currentNode.value.value_[subPath];
         }
+        return undefined;
     }, {value: this, attrs:{}});
     return ret;
   }
 
-  getValue(path: string) {
+  getValue(path: string) : ValueTypes|undefined {
     const node = this.getNode(path);
     return (node !== undefined)? node.value.value_ : undefined;
   }
 
-  getAttributes(path: string) {
+  getAttributes(path: string) : Attributes|undefined {
     const node = this.getNode(path);
     return (node !== undefined)? node.attrs : undefined;
   }
 
-  getAttributeValue(path: string, attributeKey: string) {
+  getAttributeValue(path: string, attributeKey: string) : ValueTypes|undefined {
     const attrs = this.getAttributes(path);
     return (attrs !== undefined)? attrs[attributeKey].value_ : undefined;
   }
 
-  public *items() {
+  public *items() : IterableIterator<[string, ValueTypes]> {
     for (const [key, node] of Object.entries(this.value_)) {
       yield [key, node.value.value_];
     }
   }
 
-  public *iterall() {
+  public *iterall() : IterableIterator<[string, ValueTypes, {[key: string]: ValueTypes}]> {
     for (const [key, node] of Object.entries(this.value_)) {
       const simple_attrs : { [key: string]: any } = {};
       for (const [key, value] of Object.entries(node.attrs)) {
@@ -137,7 +141,7 @@ function getType_and_Value(value: any) {
                 if (element.attrs !== undefined && element.value !== undefined) {
                   return element;
                 }
-                return new Hash(makeHashValue(element));
+                return makeHashValue(element);
               }),
             ];
         }
@@ -174,7 +178,7 @@ export function makeHash(obj: object): Hash {
 export class VectorHash {
   readonly type_ = HashTypes.VectorHash;
 
-  constructor(public value_: Hash[]) {}
+  constructor(public value_: HashValue[]) {}
 }
 
 export interface SchemaValue {
@@ -377,7 +381,7 @@ export class VectorFloat32 implements KaraboType {
 }
 
 export class Float64 implements KaraboType {
-  readonly type_ = HashTypes.Float32;
+  readonly type_ = HashTypes.Float64;
 
   constructor(public value_: number) {}
 }

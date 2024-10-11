@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 
-import { HashTypes, makeHash } from 'karabo-ts';
+import { Hash, HashTypes, makeHash, HashValue } from 'karabo-ts';
 
 // to be able to print BigInt https://stackoverflow.com/questions/65152373/typescript-serialize-bigint-in-json
 (BigInt.prototype as any).toJSON = function() {
@@ -84,12 +84,18 @@ describe("helper", function() {
             expect(hsh.type_).to.be.equal(HashTypes.Hash);
             expect(hsh.value_.key1.value.type_).to.be.equal(HashTypes.Hash);
             expect(hsh.value_.key1.attrs).to.be.an('object').that.is.empty;
-            expect(hsh.value_.key1.value.value_.sub_key.value.value_).to.be.equal(1);
-            expect(hsh.value_.key1.value.value_.sub_key.value.type_).to.be.equal(HashTypes.Int32);
-            expect(hsh.value_.key1.value.value_.sub_key.attrs).to.be.an('object').that.is.empty;
+            const node = hsh.getNode("key1.sub_key");
+            expect(node).not.to.be.undefined;
+            if (node === undefined) {
+                return;
+            }
+            expect(node.value.value_).to.be.equal(1);
+            expect(node.value.type_).to.be.equal(HashTypes.Int32);
+            expect(node.attrs).to.be.an('object').that.is.empty;
             expect(hsh.getValue("key1.sub_key")).to.be.equal(1);
             // hsh.getValue("key1") returns an HashValue and not a Hash
-            expect(hsh.getValue("key1")["sub_key"].value.value_).to.be.equal(1);
+            const subHash = new Hash(hsh.getValue("key1") as unknown as HashValue)
+            expect(subHash.getValue("sub_key")).to.be.equal(1);
         });
         it('helper vector hash', function()
         {
@@ -99,11 +105,12 @@ describe("helper", function() {
 
             expect(hsh.type_).to.be.equal(HashTypes.Hash);
             expect(hsh.value_.key1.value.type_).to.be.equal(HashTypes.VectorHash);
+            expect(hsh.value_.key1.value.value_).to.be.instanceOf(Array<HashValue>);
             expect(hsh.value_.key1.attrs).to.be.an('object').that.is.empty;
-            expect(hsh.value_.key1.value.value_[0].value_.sub_key.value.value_).to.be.equal(1);
-            expect(hsh.value_.key1.value.value_[1].value_.sub_key.value.value_).to.be.equal(2);
-            expect(hsh.getValue("key1")[0].getValue("sub_key")).to.be.equal(1);
-
+            const value = (hsh.getValue("key1")! as HashValue[]);
+            expect(value[0]).to.be.instanceOf(HashValue);
+            expect(new Hash(value[0]).getValue("sub_key")).to.be.equal(1);
+            expect(new Hash(value[1]).getValue("sub_key")).to.be.equal(2);
         });
 
 })
