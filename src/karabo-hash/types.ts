@@ -123,8 +123,14 @@ export class Hash implements KaraboType{
 function getType_and_Value(value: any) {
   switch (typeof value) {
     case 'number':
-      if (Number.isInteger(value)) {
+      if (Number.isInteger(value) && value < new Int32(0).max && value > new Int32(0).min) {
         return [Int32, value];
+      } else if (Number.isInteger(value) && value < new Int64(0n).max && value > new Int64(0n).min) {
+        return [Int64, value];
+      } else if (Number.isInteger(value) && value < new UInt64(0n).max && value > new UInt64(0n).min) {
+        return [UInt64, value];
+      } else if (Number.isInteger(value)) {
+        throw new Error(`failed to identify karabo supported type for integer ${value}`)
       } else {
         return [Float64, value];
       }
@@ -213,22 +219,6 @@ class Integer {
     this.value_ = Math.min(Math.max(value, this.min), this.max);
   }
 }
-
-function makeInteger(type_: HashTypes, min: number, max: number) {
-  return class Int implements KaraboType {
-    readonly type_ = HashTypes.UInt8;
-
-    readonly _min = min;
-
-    readonly _max = max;
-
-    constructor(public value_: number) {
-      this.value_ = Math.min(Math.max(value_, this._min), this._max);
-    }
-  };
-}
-
-export const AutoUInt8 = makeInteger(HashTypes.UInt8, 0, 2 ** 8 - 1);
 
 export class UInt8 extends Integer implements KaraboType {
   readonly type_ = HashTypes.UInt8;
