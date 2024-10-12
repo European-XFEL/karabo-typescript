@@ -93,34 +93,10 @@ function encodeString(parser: BinaryEncoder, data: string): ArrayBuffer {
   return ret;
 }
 
-function encodeVectorString(parser: BinaryEncoder, data: string[]): ArrayBuffer {
-  // Writes each string in the vector to its own ArrayBuffer
-  const strBuffers: Uint8Array[] = [];
-  let stringsLength = 0;
-  for (let i = 0; i < data.length; i++) {
-    const strBuffer = encodeString(parser, data[i]);
-    stringsLength += strBuffer.byteLength;
-    strBuffers.push(new Uint8Array(strBuffer.slice(0)));
-  }
-  // Allocates a buffer for the vector of strings and an initial UInt32 for
-  // the length of the vector of strings.
-  const ret = new Uint8Array(4 + stringsLength);
-  const dv = new DataView(ret.buffer);
-  // Writes the length of the vector of strings.
-  dv.setUint32(0, data.length, true);
-  let offset = 4;
-  // Writes the previously serialized strings to the buffer
-  for (const strBuffer of strBuffers) {
-    ret.set(strBuffer, offset);
-    offset += strBuffer.length;
-  }
-  return ret;
-}
-
 function encodeVectorHash(parser: BinaryEncoder, data: Types.HashValue[]): ArrayBuffer {
   // Writes each string in the vector to its own ArrayBuffer
   let stringsLength = 0;
-  const strBuffers = data.map((element) => {
+  const strBuffers = data.map((element : Types.HashValue) => {
     const strBuffer = parser.encodeHashValue(element);
     stringsLength += strBuffer.byteLength;
     return strBuffer.slice(0);
@@ -140,8 +116,8 @@ function encodeVectorHash(parser: BinaryEncoder, data: Types.HashValue[]): Array
   return ret;
 }
 
-function makeVectorEncoder(elementEncoder: any) {
-  return (parser: BinaryEncoder, data: number[]) => {
+function makeVectorEncoder<Type>(elementEncoder: any) {
+  return (parser: BinaryEncoder, data: Type[]) : ArrayBuffer => {
     const sizeBuffer = new ArrayBuffer(4);
     new DataView(sizeBuffer).setUint32(0, data.length, true);
     const slice_ = [sizeBuffer];
@@ -167,7 +143,7 @@ function encodeSchema(parser: BinaryEncoder, schema: Types.SchemaValue): ArrayBu
   const nameBuff = parser.encodeKey(schema.name);
   totalSize += nameBuff.byteLength;
   buffers.push(nameBuff);
-  const hashBuff = parser.encodeHashValue(schema.hash);
+  const hashBuff = parser.encodeHashValue(schema.hash.value_);
   totalSize += hashBuff.byteLength;
   buffers.push(hashBuff);
   new DataView(buffers[0]).setUint32(0, totalSize, true);
@@ -186,68 +162,66 @@ class BinaryEncoder {
   constructor() {}
 
   encodeValue(value: Types.KaraboType): ArrayBuffer {
-    switch (value.type_) {
-      case Types.HashTypes.Bool:
-        return encodeBoolean(this, value.value_);
-      case Types.HashTypes.VectorBool:
+    if (value instanceof Types.Bool) {
+      return encodeBoolean(this, value.value_);
+    } else if (value instanceof Types.VectorBool) {
         return makeVectorEncoder(encodeBoolean)(this, value.value_);
-      case Types.HashTypes.Char:
+    } else if (value instanceof Types.Char) {
         return encodeChar(this, value.value_);
-      case Types.HashTypes.VectorChar:
-        return makeVectorEncoder(encodeChar)(this, value.value_);
-      case Types.HashTypes.Int8:
+    } else if (value instanceof Types.VectorChar) {
+        return makeVectorEncoder(encodeChar)(this, Array.from(value.value_));
+    } else if (value instanceof Types.Int8) {
         return encodeInt8(this, value.value_);
-      case Types.HashTypes.VectorInt8:
+    } else if (value instanceof Types.VectorInt8) {
         return makeVectorEncoder(encodeInt8)(this, value.value_);
-      case Types.HashTypes.UInt8:
+    } else if (value instanceof Types.UInt8) {
         return encodeUInt8(this, value.value_);
-      case Types.HashTypes.VectorUInt8:
+    } else if (value instanceof Types.VectorUInt8) {
         return makeVectorEncoder(encodeUInt8)(this, value.value_);
-      case Types.HashTypes.Int16:
+    } else if (value instanceof Types.Int16) {
         return encodeInt16(this, value.value_);
-      case Types.HashTypes.VectorInt16:
+    } else if (value instanceof Types.VectorInt16) {
         return makeVectorEncoder(encodeInt16)(this, value.value_);
-      case Types.HashTypes.UInt16:
+    } else if (value instanceof Types.UInt16) {
         return encodeUInt16(this, value.value_);
-      case Types.HashTypes.VectorUInt16:
+    } else if (value instanceof Types.VectorUInt16) {
         return makeVectorEncoder(encodeUInt16)(this, value.value_);
-      case Types.HashTypes.Int32:
+    } else if (value instanceof Types.Int32) {
         return encodeInt32(this, value.value_);
-      case Types.HashTypes.VectorInt32:
+    } else if (value instanceof Types.VectorInt32) {
         return makeVectorEncoder(encodeInt32)(this, value.value_);
-      case Types.HashTypes.UInt32:
+    } else if (value instanceof Types.UInt32) {
         return encodeUInt32(this, value.value_);
-      case Types.HashTypes.VectorUInt32:
+    } else if (value instanceof Types.VectorUInt32) {
         return makeVectorEncoder(encodeUInt32)(this, value.value_);
-      case Types.HashTypes.Int64:
+    } else if (value instanceof Types.Int64) {
         return encodeInt64(this, BigInt(value.value_));
-      case Types.HashTypes.VectorInt64:
+    } else if (value instanceof Types.VectorInt64) {
         return makeVectorEncoder(encodeInt64)(this, value.value_);
-      case Types.HashTypes.UInt64:
+    } else if (value instanceof Types.UInt64) {
         return encodeUInt64(this, BigInt(value.value_));
-      case Types.HashTypes.VectorUInt64:
+    } else if (value instanceof Types.VectorUInt64) {
         return makeVectorEncoder(encodeUInt64)(this, value.value_);
-      case Types.HashTypes.Float32:
+    } else if (value instanceof Types.Float32) {
         return encodeFloat32(this, value.value_);
-      case Types.HashTypes.VectorFloat32:
+    } else if (value instanceof Types.VectorFloat32) {
         return makeVectorEncoder(encodeFloat32)(this, value.value_);
-      case Types.HashTypes.Float64:
+    } else if (value instanceof Types.Float64) {
         return encodeFloat64(this, value.value_);
-      case Types.HashTypes.VectorFloat64:
+    } else if (value instanceof Types.VectorFloat64) {
         return makeVectorEncoder(encodeFloat64)(this, value.value_);
-      case Types.HashTypes.String:
+    } else if (value instanceof Types.String) {
         return encodeString(this, value.value_);
-      case Types.HashTypes.VectorString:
-        return encodeVectorString(this, value.value_);
-      case Types.HashTypes.Hash:
+    } else if (value instanceof Types.VectorString) {
+        return makeVectorEncoder(encodeString)(this, value.value_);
+    } else if (value instanceof Types.Hash) {
         return this.encodeHashValue(value.value_);
-      case Types.HashTypes.VectorHash:
+    } else if (value instanceof Types.VectorHash) {
         return encodeVectorHash(this, value.value_);
-      case Types.HashTypes.Schema:
+    } else if (value instanceof Types.Schema) {
         return encodeSchema(this, value.value_);
-      default:
-        return new ArrayBuffer(0);
     }
+    throw new Error(`failed to encode type ${value.type_} ${JSON.stringify(value)}`);
   }
 
   encodeKey(key: string): ArrayBuffer {
@@ -260,8 +234,7 @@ class BinaryEncoder {
   }
 
   encodeHash(data: Types.Hash): ArrayBuffer {
-    const hashValue = data.value;
-    return this.encodeHashValue(hashValue);
+    return this.encodeHashValue(data.value_);
   }
 
   encodeHashValue(hashValue: Types.HashValue): ArrayBuffer {

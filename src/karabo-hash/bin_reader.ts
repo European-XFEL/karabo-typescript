@@ -1,5 +1,7 @@
 import * as Types from './types';
 
+type ParserFunction = (parser: BinaryDecoder) => Types.KaraboType;
+
 function readUInt8(parser: BinaryDecoder): Types.UInt8 {
   parser.pos += 1;
   return new Types.UInt8(parser.dataview.getUint8(parser.pos - 1));
@@ -59,7 +61,7 @@ function readBool(parser: BinaryDecoder): Types.Bool {
 }
 
 function readVectorBool(parser: BinaryDecoder): Types.VectorBool {
-  const size = readUInt32(parser).value;
+  const size = readUInt32(parser).value_;
   const start = parser.pos;
   parser.pos = start + size;
   const arr = Array.from(parser.data.slice(start, parser.pos)).map((m) => m > 0);
@@ -72,13 +74,13 @@ function readChar(parser: BinaryDecoder): Types.Char {
 }
 
 function readVectorChar(parser: BinaryDecoder): Types.VectorChar {
-  const size = readUInt32(parser).value;
+  const size = readUInt32(parser).value_;
   parser.pos += size;
   return new Types.VectorChar(parser.data.slice(parser.pos - size, parser.pos - 1));
 }
 
 function readString(parser: BinaryDecoder): Types.String {
-  const size = readUInt32(parser).value;
+  const size = readUInt32(parser).value_;
   const content = parser.data.slice(parser.pos, parser.pos + size);
   const str = parser.string_encoder.decode(content);
   parser.pos += size;
@@ -86,7 +88,7 @@ function readString(parser: BinaryDecoder): Types.String {
 }
 
 function readVectorString(parser: BinaryDecoder): Types.VectorString {
-  let size = readUInt32(parser).value;
+  let size = readUInt32(parser).value_;
   const res = new Types.VectorString([]);
   while (size > 0) {
     const element = readString(parser);
@@ -99,32 +101,19 @@ function readVectorString(parser: BinaryDecoder): Types.VectorString {
 // this is not ideal, we should figure out a way to
 function makeVectorReader(elementReader: any, klass: any) {
   return (parser: BinaryDecoder) => {
-    let size = readUInt32(parser).value;
+    let size = readUInt32(parser).value_;
     const slice_ = [];
     while (size > 0) {
       const element = elementReader(parser);
-      slice_.push(element.value);
+      slice_.push(element.value_);
       size -= 1;
     }
     return new klass(slice_);
   };
 }
 
-// function readVector<T>(
-//   parser: BinaryDecoder,
-//   elementReader: (parser: BinaryDecoder) => T
-// ): T[] {
-//   let size = readUInt32(parser).value;
-//   const ret: T[] = [];
-//   while (size >= 0) {
-//     ret.push(elementReader(parser));
-//     size -= 1;
-//   }
-//   return ret;
-// }
-
 function readSchema(parser: BinaryDecoder): Types.Schema {
-  const l = readUInt32(parser).value;
+  const l = readUInt32(parser).value_;
   const op = parser.pos;
   const nameSize = parser.data[parser.pos];
   parser.pos++;
@@ -135,7 +124,7 @@ function readSchema(parser: BinaryDecoder): Types.Schema {
   if (parser.pos - op !== l) {
     throw new Error('Parser failed parsing Schema');
   }
-  return new Types.Schema({ name, hash: hsh.value });
+  return new Types.Schema({name: name, hash: hsh });
 }
 
 function parserUndefined(parser: BinaryDecoder, type: number): Types.Hash {
@@ -183,7 +172,7 @@ const parsers = [
   readVectorChar, // ByteArray = 37
 ];
 
-function getParser(typeNumber: number) {
+function getParser(typeNumber: number) : ParserFunction {
   const parser = parsers[typeNumber];
   if (typeof parser != 'function') {
     throw new Error('failed to find parser for type ' + typeNumber);
@@ -216,8 +205,8 @@ class BinaryDecoder {
   }
 
   readVectorHash(): Types.VectorHash {
-    let size = readUInt32(this).value;
-    const ret: Types.HashValue[] = [];
+    let size = readUInt32(this).value_;
+    const ret = new Array<Types.HashValue>();
     while (size > 0) {
       ret.push(this.readHash().value_);
       size -= 1;
@@ -226,16 +215,16 @@ class BinaryDecoder {
   }
 
   readHash(): Types.Hash {
-    let size = readUInt32(this).value;
-    const ret: Types.HashValue = {};
+    let size = readUInt32(this).value_;
+    const ret = new Types.HashValue();
     while (size > 0) {
       const key = this.readKey();
-      const hashType = readUInt32(this).value;
-      let asize = readUInt32(this).value;
+      const hashType = readUInt32(this).value_;
+      let asize = readUInt32(this).value_;
       const attrs: Types.Attributes = {};
       while (asize > 0) {
         const attrKey = this.readKey();
-        const attrType = readUInt32(this).value;
+        const attrType = readUInt32(this).value_;
         const attrValue = getParser(attrType)(this);
         attrs[attrKey] = attrValue;
         asize -= 1;
