@@ -38,18 +38,19 @@ export enum HashTypes {
   ByteArray = 37,
 }
 
-type ValueTypes = number|
-                  number[]|
-                  string|
-                  string[]|
-                  bigint|
-                  bigint[]|
-                  HashValue|
-                  HashValue[]|
-                  SchemaValue|
-                  boolean|
-                  boolean[]|
-                  Uint8Array;
+type ValueTypes =
+  | number
+  | number[]
+  | string
+  | string[]
+  | bigint
+  | bigint[]
+  | HashValue
+  | HashValue[]
+  | SchemaValue
+  | boolean
+  | boolean[]
+  | Uint8Array;
 
 export interface KaraboType {
   type_: HashTypes;
@@ -69,51 +70,54 @@ export class HashValue {
   [key: string]: HashNode;
 }
 
-export class Hash implements KaraboType{
+export class Hash implements KaraboType {
   readonly type_ = HashTypes.Hash;
 
   constructor(public value_: HashValue) {}
 
   getNode(path: string) {
     const ret = path.split('.').reduce(
-      (currentNode : HashNode | undefined, subPath : string) => {
-        if (currentNode !== undefined &&
-            currentNode.value.value_ instanceof HashValue &&
-            subPath in currentNode.value.value_)
-        {
+      (currentNode: HashNode | undefined, subPath: string) => {
+        if (
+          currentNode !== undefined &&
+          currentNode.value.value_ instanceof HashValue &&
+          subPath in currentNode.value.value_
+        ) {
           return currentNode.value.value_[subPath];
         }
         return undefined;
-    }, {value: this, attrs:{}});
+      },
+      { value: this, attrs: {} },
+    );
     return ret;
   }
 
-  getValue(path: string) : ValueTypes|undefined {
+  getValue(path: string): ValueTypes | undefined {
     const node = this.getNode(path);
-    return (node !== undefined)? node.value.value_ : undefined;
+    return node !== undefined ? node.value.value_ : undefined;
   }
 
-  getAttributes(path: string) : Attributes|undefined {
+  getAttributes(path: string): Attributes | undefined {
     const node = this.getNode(path);
-    return (node !== undefined)? node.attrs : undefined;
+    return node !== undefined ? node.attrs : undefined;
   }
 
-  getAttributeValue(path: string, attributeKey: string) : ValueTypes|undefined {
+  getAttributeValue(path: string, attributeKey: string): ValueTypes | undefined {
     const attrs = this.getAttributes(path);
-    return (attrs !== undefined)? attrs[attributeKey].value_ : undefined;
+    return attrs !== undefined ? attrs[attributeKey].value_ : undefined;
   }
 
-  public *items() : IterableIterator<[string, ValueTypes]> {
+  public *items(): IterableIterator<[string, ValueTypes]> {
     for (const [key, node] of Object.entries(this.value_)) {
       yield [key, node.value.value_];
     }
   }
 
-  public *iterall() : IterableIterator<[string, ValueTypes, {[key: string]: ValueTypes}]> {
+  public *iterall(): IterableIterator<[string, ValueTypes, { [key: string]: ValueTypes }]> {
     for (const [key, node] of Object.entries(this.value_)) {
-      const simple_attrs : { [key: string]: any } = {};
+      const simple_attrs: { [key: string]: any } = {};
       for (const [key, value] of Object.entries(node.attrs)) {
-          simple_attrs[key] = value.value_;
+        simple_attrs[key] = value.value_;
       }
       yield [key, node.value.value_, simple_attrs];
     }
@@ -130,7 +134,7 @@ function getType_and_Value(value: any) {
       } else if (Number.isInteger(value) && value < new UInt64(0n).max && value > new UInt64(0n).min) {
         return [UInt64, value];
       } else if (Number.isInteger(value)) {
-        throw new Error(`failed to identify karabo supported type for integer ${value}`)
+        throw new Error(`failed to identify karabo supported type for integer ${value}`);
       } else {
         return [Float64, value];
       }
@@ -159,7 +163,7 @@ function getType_and_Value(value: any) {
                   return element;
                 }
                 return makeHashValue(element);
-              })
+              }),
             ];
           default:
             throw new Error(`cannot find suitable karabo type for ${sub_type} ${JSON.stringify(value)}`);

@@ -124,7 +124,7 @@ function readSchema(parser: BinaryDecoder): Types.Schema {
   if (parser.pos - op !== l) {
     throw new Error('Parser failed parsing Schema');
   }
-  return new Types.Schema({name: name, hash: hsh });
+  return new Types.Schema({ name: name, hash: hsh });
 }
 
 function parserUndefined(parser: BinaryDecoder, type: number): Types.Hash {
@@ -172,7 +172,7 @@ const parsers = [
   readVectorChar, // ByteArray = 37
 ];
 
-function getParser(typeNumber: number) : ParserFunction {
+function getParser(typeNumber: number): ParserFunction {
   const parser = parsers[typeNumber];
   if (typeof parser != 'function') {
     throw new Error('failed to find parser for type ' + typeNumber);
